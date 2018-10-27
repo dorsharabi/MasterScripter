@@ -1,0 +1,163 @@
+﻿@using System.Web.Script.Serialization
+@using MasterScripter.Models
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+
+    @Scripts.Render("~/bundles/popper")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    <script type="text/javascript" src="@Url.Content("~/Scripts/moment.js")"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.1/ace.js"></script>
+    <script type="text/javascript">
+        jQuery.fn.scrollTo = function (elem, speed) {
+            $(this).animate({
+                scrollTop: $(this).scrollTop() - $(this).offset().top + $(elem).offset().top
+            }, speed == undefined ? 1000 : speed);
+            return this;
+        };
+    </script>
+
+    @RenderSection("scripts", required: false)
+
+</head>
+<body>
+<nav style="position: fixed; width: 100%; z-index: 999999999;">
+    <div class="container-fluid bg-primary">
+        <a href="@Url.Action("Index", "Home")">
+            <img src="~/images/logo-1.png" class="img-fluid" alt="Responsive image" style="margin: 0.5rem 0 1rem 0; width: 13rem;">
+
+        </a>
+
+        <div class="" style="position: relative;">
+            <div class="" style="position: absolute; left: 280px; bottom: 0;">
+                <ul class="nav nav-tabs bg-primary">
+                    <li class="nav-item" allow-view="0" >
+                        <a class="nav-link active" href="@Url.Action("Index", "Home")">Home</a>
+                    </li>
+                    <li class="nav-item dropdown" allow-view="0">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Scripts</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="@Url.Action("IndexView", "Scripts")">View</a>
+                            <a class="dropdown-item" allow-view="2" href="@Url.Action("Create", "Scripts")">Add new</a>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown" allow-view="0">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Executions</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="@Url.Action("Index", "Executions")">View</a>
+                            <a class="dropdown-item" href="@Url.Action("Create", "Executions")">Add new</a>
+                        </div>
+                    </li>
+
+                    <li class="nav-item dropdown" allow-view="0">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Machines</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="@Url.Action("Index", "Machines")">View</a>
+                            <a class="dropdown-item" allow-view="1" href="@Url.Action("Create", "Machines")">Add new</a>
+                        </div>
+                    </li>
+                    
+                    <li class="nav-item dropdown" allow-view="2">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Management</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" allow-view="2" href="@Url.Action("Index", "Companies")">Companies</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" allow-view="2" href="@Url.Action("Index", "Users")">Users</a>
+                            <a class="dropdown-item" allow-view="1" href="@Url.Action("GetUnconnectedUsers", "Users")">Unconnecte Users</a>
+                            
+                            <div class="dropdown-divider"></div>
+                            <a id="startQueue" class="dropdown-item" href="#">Start Queue</a>
+                            <a id="stopQueue" class="dropdown-item" href="#">Stop Queue</a>
+                        </div>
+                    </li>
+
+                    @Html.Partial("_LoginPartial")
+                </ul>
+            </div>
+        </div>
+
+    </div> 
+</nav>
+
+
+<div class="container body-content" style="padding-top: 11rem;">
+    @RenderBody()
+    
+    <script type="text/javascript">
+        $(function() {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+
+        $('#startQueue').click(function(parameters) {
+            $.get('@Url.Action("StartQueue", "QueueManager")').success(function (parameters) {
+                $("#startQueue").prop("disabled", true);
+            });
+        });
+
+        $('#stopQueue').click(function (parameters) {
+            $.get('@Url.Action("StopQueue", "QueueManager")').success(function (parameters) {
+                $("#stopQueue").prop("disabled", true);
+            });
+        });
+
+    </script>
+    <hr/>
+    <footer>
+      
+        <p>&copy; @DateTime.Now.Year - Dor Kfir Riman - Master Scripter Application</p>
+    </footer>
+</div>
+    
+
+    @functions
+{
+
+        public string GetCurrentUser()
+        {
+            MasterScripterContext db = new MasterScripterContext();
+            MasterScripter.DAL.Models.User user = db.Users.FirstOrDefault(u => u.Email.Equals(User.Identity.Name));
+            if (user != null)
+            {
+                return new JavaScriptSerializer().Serialize(new { id = user.Id, name= user.FullName, role= user.Role, email= user.Email });
+            }
+
+            return new JavaScriptSerializer().Serialize(new { id = "", name ="", role = "", email = "" });
+        }
+
+    }
+
+<script type="text/javascript">
+
+    var user = '@GetCurrentUser()';
+
+    window.userInfo = JSON.parse(user.replace(/&quot;/g, '"'));;
+
+    sessionStorage.setItem("userInfoId", window.userInfo.id);
+    sessionStorage.setItem("userInfoName", window.userInfo.name);
+    sessionStorage.setItem("userInfoRole", window.userInfo.role);
+    sessionStorage.setItem("userInfoEmail", window.userInfo.email);
+
+    //window is global fo all pages
+    window.clearViews= function clearViews() {
+        if (window.userInfo.role === 3) {
+            $('[allow-view="1"],[allow-view="2"]').remove();
+        }
+        else if (window.userInfo.role === 2) {
+            $('[allow-view="1"]').remove();
+        }
+        else if (window.userInfo.role === "") {
+            $('[allow-view="0"],[allow-view="1"],[allow-view="2"]').remove();
+        }
+    }
+    window.clearViews();
+</script>
+
+</body>
+</html>

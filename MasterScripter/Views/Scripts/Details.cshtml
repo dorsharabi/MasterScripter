@@ -1,0 +1,73 @@
+﻿@model MasterScripter.DAL.Models.Script
+
+@{
+    ViewBag.Title = "Details";
+}
+
+
+<div class="card" >
+    <div class="card-body">
+        <h5 class="card-title">
+            <strong>  @Html.DisplayNameFor(model => model.Name):</strong>  
+            @Html.DisplayFor(model => model.Name)
+        </h5>
+        <p class="card-text">
+            <strong>@Html.DisplayNameFor(model => model.Description):</strong>
+            @Html.DisplayFor(model => model.Description)
+        </p>
+    </div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+            <strong>@Html.DisplayNameFor(model => model.Version):</strong>
+            @Html.DisplayFor(model => model.Version)
+        </li>
+     
+        <li class="list-group-item">
+            <strong>@Html.DisplayNameFor(model => model.FileType.Language):</strong>
+            @Html.DisplayFor(model => model.FileType.Language)
+        </li>
+        
+        <li class="list-group-item">
+            <strong>
+            
+                @Html.DisplayNameFor(model => model.User.FullName):
+            </strong>
+            @Html.DisplayFor(model => model.User.FullName)
+            <i style="margin-left: unset;" class="material-icons">person</i>
+        </li>
+
+        <li class="list-group-item">
+            <strong>@Html.DisplayNameFor(model => model.CreationDate):</strong>
+            @Html.DisplayFor(model => model.CreationDate)
+        </li>
+
+        <li class="list-group-item">
+            <strong>@Html.DisplayNameFor(model => model.Cost):</strong>
+            @Html.DisplayFor(model => model.Cost)
+            <i style="margin-left: unset;" class="material-icons">attach_money</i>
+        </li>
+    </ul>
+    <div class="card-body" allow-view="2" style="position: relative">
+        <a href="@Url.Action("Edit", "Scripts", new { id=Model.Id, version=Model.Version})" class="btn btn-primary bmd-btn-fab bootom-right-fab" 
+           style="position: absolute"  data-toggle="tooltip" data-placement="top" title="Edit Script">
+            <i class="material-icons">edit</i>
+        </a>
+    </div>
+    <div class="card-footer text-muted">
+       <div id="aceContent" style="width:100%; height:200px">
+
+       </div>
+    </div>
+</div>
+<script type="text/javascript">
+    window.clearViews();
+    var editor=ace.edit(document.getElementById("aceContent"), {
+        mode: "ace/mode/javascript",
+        selectionStyle: "text"
+    });
+    editor.setValue(`@Model.Content`);
+    editor.setReadOnly(true);
+</script>
+<!--TODO ליצור פונקציה שמשנה את התיבה לפי שפה של הסקריפט-->
+
+

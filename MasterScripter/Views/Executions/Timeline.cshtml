@@ -1,0 +1,144 @@
+﻿@using MasterScripter.DAL.Models
+@model IEnumerable<MasterScripter.DAL.Models.Execution>
+
+@functions{
+
+    public string GetIconText(Status status)
+    {
+        switch (status)
+        {
+            case Status.Running:
+                return "directions_run";
+            case Status.Succeeded:
+                return "done";
+            case Status.Failed:
+                return "error_outline";
+            case Status.Waiting:
+            default:
+                return "access_time";
+        }
+    }
+
+    public string GetCssClass(Status status, string prefix = "")
+    {
+        switch (status)
+        {
+            case Status.Running:
+                return prefix + "primary";
+            case Status.Succeeded:
+                return prefix + "success";
+            case Status.Failed:
+                return prefix + "danger";
+            case Status.Waiting:
+            default:
+                return prefix + "secondary";
+        }
+    }
+
+}
+
+<ul class="timeline">
+    @foreach (var item in Model)
+    {
+        <li class="timeline-item">
+            
+            <div class="timeline-badge @(GetCssClass(item.Status, "bg-"))">
+                <i class="material-icons">@(GetIconText(item.Status))</i>
+            </div>
+
+            <div class="timeline-panel card @(GetCssClass(item.Status, "border-")) @(GetCssClass(item.Status, "text-"))" style="border-width: 2px;">
+            
+                <button type="button" class="btn btn-primary bmd-btn-icon" data-toggle="modal" data-target="#executionDetailModal" data-whatever="@("Execution_"+item.Id)" style="position: absolute; right: 0.5rem; top: 0.5rem;">
+                    <i style="line-height: 1" class="material-icons"  data-toggle="tooltip" data-placement="top" title="See more details">more_vert</i>
+                </button>
+                
+                
+                <button type="button" class="btn btn-primary bmd-btn-icon" data-toggle="modal" data-target="#executionDetailModal" data-whatever="@("ExecutionConversion_" + item.Id)" style="position: absolute; right: 0.5rem; bottom: 0.5rem;">
+                    <i style="line-height: 1" class="material-icons" data-toggle="tooltip" data-placement="top" title="@((item.Comments.Count > 0)? $"{item.Comments.Count} comments" : "Start new conversion")">chat</i>
+                </button>
+             
+
+                <div class="timeline-heading card-header bg-transparent @(GetCssClass(item.Status, "border-"))" style="padding-bottom: 0px;">
+                    <h4 class="timeline-title">
+                        <strong> (# @Html.DisplayFor(modelItem => item.Id)) </strong>
+
+                        @Html.DisplayFor(modelItem => item.Machine.VLan) -
+                        @Html.DisplayFor(modelItem => item.Machine.IP)
+                    </h4>
+                    <p>
+                        <small>
+                            Created <span data-date="@(item.CreationDate)" data-toggle="tooltip" data-placement="top" title="@(item.CreationDate)">  @(item.CreationDate)</span> by <u>@Html.DisplayFor(modelItem => item.User.FullName)</u>
+                        </small>
+                        @{
+                            if (item.ScheduleTime != null)
+                            {
+                                <br/>
+                                <small>
+                                    <i class="material-icons">timer</i> Schedule on 
+                                    <span data-date="@(item.ScheduleTime)" data-toggle="tooltip" data-placement="top" title="@(item.ScheduleTime)">  @(item.ScheduleTime)</span> 
+                                </small>
+                            }
+                        }
+                    </p>
+                </div>
+                <div class="card-body">
+                    <div class="timeline-body card-text">
+                        
+                        @foreach (var executionsScripts in item.ExecutionsScriptses)
+                        {
+                            <div class="row @GetCssClass(executionsScripts.Status, "text-")">
+                                <div class="col-md-2"><i style="line-height: 1" class="material-icons">@(GetIconText(executionsScripts.Status))</i></div>
+                                <div class="col-md-10">@Html.DisplayFor(model => executionsScripts.Script.Name)</div>
+                            </div>
+                        }
+
+                    
+                    </div>
+                </div>
+                @{
+                    if (item.SrartTime != null || item.EndTime != null)
+                    {
+                        <div class="card-footer bg-transparent @(GetCssClass(item.Status, "border-"))">
+                            <small>
+                                @{
+                                    if (item.SrartTime != null)
+                                    {
+                                        <i class="material-icons">trending_up</i>
+                                        <span data-date="@(item.SrartTime)" data-toggle="tooltip" data-placement="top" title="@(item.SrartTime)"> @(item.SrartTime)</span>
+                                    }
+                                }
+                                -
+                                @{
+                                    if (item.EndTime != null)
+                                    {
+                                        <i class="material-icons">trending_down</i>
+                                        <span data-date="@(item.EndTime)" data-toggle="tooltip" data-placement="top" title="@(item.EndTime)"> @(item.EndTime)</span>
+                                    }
+                                }
+
+                            </small>
+                        </div>
+                    }
+                }
+                
+            </div>
+        </li>
+    }
+</ul>
+
+<script type="text/javascript">
+    $(function () {
+        $('[data-date]').each(function () {
+            var val = $(this).attr('data-date');
+
+            if (val) {
+                $(this).html(moment(val).fromNow());
+            }
+
+        });
+    });
+
+    $(function() {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>

@@ -1,0 +1,12 @@
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\bin\Debug\MasterScripter.DAL.dll.config
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\bin\Debug\MasterScripter.DAL.dll
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\bin\Debug\MasterScripter.DAL.pdb
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\bin\Debug\EntityFramework.dll
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\bin\Debug\EntityFramework.SqlServer.dll
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\bin\Debug\EntityFramework.xml
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\bin\Debug\EntityFramework.SqlServer.xml
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\obj\Debug\MasterScripter.DAL.csprojAssemblyReference.cache
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\obj\Debug\MasterScripter.DAL.csproj.CoreCompileInputs.cache
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\obj\Debug\MasterScripter.DAL.csproj.CopyComplete
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\obj\Debug\MasterScripter.DAL.dll
+C:\MasterScripterNew\MasterScripter\MasterScripter\MasterScripter.DAL\obj\Debug\MasterScripter.DAL.pdb

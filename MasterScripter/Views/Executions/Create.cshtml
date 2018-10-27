@@ -1,0 +1,200 @@
+﻿@model MasterScripter.DAL.Models.Execution
+
+@{
+    ViewBag.Title = "Create";
+}
+<script type="text/javascript" src="~/Scripts/Schedule.js"></script>
+
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="~/Scripts/kmeans.js"></script>
+
+<h2>Create</h2>
+<div class="row">
+    <div class="col-md-4">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            @Html.HiddenFor(model => model.MachineIP)
+            @Html.HiddenFor(model => model.MachineVLan)
+
+            <input type="text" id="ScriptsList" name="ScriptsList" style="display:none" />
+
+            <div class="form-horizontal">
+                <h4>Execution</h4>
+                <hr />
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ScheduleTime, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <input type="text" id="ScheduleTime" class="form-control" name="ScheduleTime" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ReasonId, "ReasonId", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.DropDownList("ReasonId", null, htmlAttributes: new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.ReasonId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    Machine
+                    <div class="col-md-10">
+                        <div class="dropdown" id="dropdownMachines">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMachinesButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Select Machine
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="max-height: 20rem; overflow: auto;">
+                                @foreach (var machine in ViewBag.Machines)
+                                {
+                                    <a class="dropdown-item" href="#" machine-ip="@machine.IP" machine-vlan="@machine.VLan">@machine.IP (@machine.VLan)</a>
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Create" class="btn btn-primary btn-lg" />
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-md-8">
+        <div class="row">
+            <div class="col-md-6 jumbotron" style="padding-top:1rem; padding-bottom:1rem;">
+                <h5>Script List</h5>
+                <ul id="sortable1" class="connectedSortable border border-primary" style="height: 55vh; overflow: auto;    padding: 0.3rem;">
+                    @foreach (var script in ViewBag.Scripts)
+                    {
+                        <li sid="@script.Id" sver="@script.Version" class="ui-state-default m-1" style="list-style-type: none; cursor:pointer;">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <h5 class="card-title">@script.Name (@script.Version)</h5>
+                                    <p class="card-text">@script.Description</p>
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="col-md-6 jumbotron" style="padding-top:1rem; padding-bottom:1rem;">
+                <h5>Scripts to Execution</h5>
+                <ul id="sortable2" class="connectedSortable border border-primary" style="height: 55vh; overflow: auto;     padding: 0.3rem;"></ul>
+                <h6 id="scriptsCount" >Total Scripts: 0</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+
+<script type="text/javascript">
+    $(function () {
+        // set on click event for each element item
+        $("#dropdownMachines .dropdown-menu  a.dropdown-item").click(function () {
+
+            // update the text of the seleced item
+            $("#dropdownMachinesButton").text($(this).text());
+            $("#dropdownMachinesButton").val($(this).text());
+
+            // update the IP and the VLan data
+            $("#MachineVLan").val($(this).attr("machine-vlan"));
+            $("#MachineIP").val($(this).attr("machine-ip"));
+        });
+    });
+
+    $(function () {
+        $("#sortable1, #sortable2").sortable({
+            connectWith: ".connectedSortable",
+            update: function (event, ui) {
+                $("#ScriptsList").val($('#sortable2 li').toArray().map(x => $(x).attr("sid") + "_" + $(x).attr("sver")).join(","));
+                $('#scriptsCount').text('Total Scripts: ' + $('#sortable2 li').length);
+     
+
+                if (isKmenasData === false) {
+                    getKmenasData();
+                }
+            
+            }
+           
+            
+        }).disableSelection();
+    });
+
+    var isKmenasData = false;
+
+    function getKmenasData() {
+        isKmenasData = true;
+        $('#sortable1 li .card-body').removeClass('bg-info');
+        $('#sortable2 li .card-body').removeClass('bg-info');
+
+
+        $.get('@Url.Action("GetKmeansData","Analytics")').success(function (parameters) {
+
+            var km = new kMeans({K: 4 });
+
+            var data = parameters.data.map(x => x.Item2);
+
+            var fakeExe = Array.apply(null, Array(data[0].length)).map(Number.prototype.valueOf, 0);
+            $('#sortable2 li').toArray().map(x => parseInt($(x).attr("sid"))).forEach(x => fakeExe[x] = 1);
+
+            data.push(fakeExe);
+
+            km.cluster(data);
+
+            while (km.step()) {
+                km.findClosestCentroids();
+                km.moveCentroids();
+
+                console.log(km.centroids);
+
+                if (km.hasConverged()) break;
+            }
+
+            console.log('Finished in:', km.currentIteration, ' iterations');
+            console.log(km.centroids, km.clusters);
+
+            var matchedCluster = km.clusters.filter(x => x.indexOf(data.length - 1) > -1);
+
+            var scriptCounter = Array.apply(null, Array(data[0].length)).map(Number.prototype.valueOf, 0);
+
+            matchedCluster[0].forEach(x => {
+                if (parameters.data[x]) {
+                    parameters.data[x].Item2.forEach((temp, i) => {
+                        scriptCounter[i] += temp;
+                    });
+                }
+            });
+
+            var tempArray = scriptCounter;
+            tempArray = tempArray.filter((x, i) => fakeExe[i] === 0);
+            tempArray.sort((a, b) => b-a);
+
+            var suggestedScriptId = scriptCounter.indexOf(tempArray[0]);
+
+            $('#sortable1 li[sid='+suggestedScriptId+'] .card-body').addClass('bg-info');
+            $("#sortable1").scrollTo(".bg-info", 1000);
+            isKmenasData = false;
+        });
+
+
+    }
+
+    $('#ScheduleTime').bootstrapMaterialDatePicker({ format: 'DD/MM/YYYY HH:mm',minDate: new Date() });
+</script>
